@@ -177,6 +177,10 @@ let us create the initial Dockerfile. I know I want to use python's machine lear
 
     FROM waleedka/modern-deep-learning
 
+    ADD ./app/ / /app/
+
+    WORKDIR /app
+
 next, I need to create my docker-compose.yml file:
 
     version: "3.2"
@@ -190,5 +194,146 @@ next, I need to create my docker-compose.yml file:
 Now I need to create the 'app/app/' directory
 
     mkdir app
+
+For now, because we don't have any programs written yet, the docker container is going to build, run, and then stop as there are no tasks. So, for now, we are going to run the container without compose until we have written our application. The commands for building and running containers can get pretty lengthy. For that reason, I like to create a Makefile to shorten my commands. In your current directory create a Makefile and insert the following:
+
+    # make build
+
+    cwd = $(shell pwd)
+    build:
+    	docker build -t mlearn .
+    # make run
+    run:
+    	docker run -i -t --name mlearn -v /${cwd}/app/:/app/ -d mlearn /bin/bash
+    # make exec
+    exec:
+    	docker exec -i -t mlearn /bin/bash
+    # start
+    start:
+    	docker start mlearn
+    # stop
+    stop:
+    	docker stop mlearn
+    # rm
+    remove:
+    	docker rm mlearn
+    
+Let us build, run, and exec into our container
+
+    make build
+    make run
+    make exec
+
+Now, the first thing we need to do is create our '__init__.py'. This tells python that any modules in the current directory can be imported into any other modules, also in that directory.
+
+    touch __init__.py
+
+
+Let us also make our utils directory.
+
+    mkdir utils
+
+The specific algorithm that I want to build involves several steps. First, data must be imported, cleaned, and transformed. Within the utils directory, create a file called 'preprocessing.py' and insert the following into it:
+
+    # Data Preprocessing
+    
+    # Importing the libraries
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from sklearn.preprocessing import Imputer
+    from sklearn.preprocessing import LabelEncoder
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+
+    # Importing the dataset
+    def import_data(csv, xidx, yidx, start=0, header=0):
+        dataset = ""
+        if header is None:
+            dataset = pd.read_csv(csv,header=header)
+        else:
+            dataset = pd.read_csv(csv)
+        X = dataset.iloc[:, start:xidx].values
+        y = dataset.iloc[:, yidx].values
+        return X,y
+    
+    # Taking care of missing data
+    def fix_missing(X, xstart, xstop):
+        imputer = Imputer(missing_values = 'NaN', strategy = 'mean', axis = 0)
+        imputer = imputer.fit(X[:, xstart:xstop])
+        X[:, xstart:xstop] = imputer.transform(X[:, xstart:xstop])
+        return X
+    
+    # Encoding categorical data
+    def categorical_encode(data, independent=True, equal=True, idx=0):
+        # Encoding the Independent Variable
+        # [string1,string2,string3] --> [0,1,2]
+        if independent:
+            labelencoder_data = LabelEncoder()
+            data[:, idx] = labelencoder_data.fit_transform(data[:, idx])
+    
+            if equal:
+                from sklearn.preprocessing import OneHotEncoder
+                # Prevent machine from thinking one category is greater than
+                # another
+                # [0,1,2] --> [[1,0,0],[0,1,0],[0,0,1]]
+                # first column --> France, second column --> Germany, third column --> Spain
+                onehotencoder = OneHotEncoder(categorical_features = [idx])
+                data = onehotencoder.fit_transform(data).toarray()
+    
+        else:
+            # Encoding the Dependent Variable
+            # Dependent variable doesn't need OneHotEncoder
+            # ['No','Yes'] --> [0,1]
+            labelencoder_data = LabelEncoder()
+            data = labelencoder_data.fit_transform(data)
+    
+        return data
+    
+    # Split dataset into training and test sets
+    def create_sets(X, y, size=0.2, random_state=0):
+    
+            return train_test_split(X, y, test_size = size, random_state = random_state)
+    
+    # Feature scaling
+    def feature_scale(X_train, X_test=None):
+            # Put columns in same scale so one feature doesn't
+            # dominate another
+    
+            sc_X = StandardScaler()
+            X_train = sc_X.fit_transform(X_train)
+            if X_test is None:
+                return X_train, sc_X
+    
+            X_test = sc_X.transform(X_test)
+    
+            return X_train, X_test, sc_X
+
+Note, this workshop is not intended to teach machine learning, but, instead, it is intended to teach about software architecture, syntax, etc. That being said, lets analyze the syntax and formation of one of the functions in preprocessing.py:
+
+    # Encoding categorical data
+    def categorical_encode(data, independent=True, equal=True, idx=0):
+        # Encoding the Independent Variable
+        # [string1,string2,string3] --> [0,1,2]
+        if independent:
+            labelencoder_data = LabelEncoder()
+            data[:, idx] = labelencoder_data.fit_transform(data[:, idx])
+    
+            if equal:
+                # Prevent machine from thinking one category is greater than
+                # another
+                # [0,1,2] --> [[1,0,0],[0,1,0],[0,0,1]]
+                # first column --> France, second column --> Germany, third column --> Spain
+                onehotencoder = OneHotEncoder(categorical_features = [idx])
+                data = onehotencoder.fit_transform(data).toarray()
+    
+        else:
+            # Encoding the Dependent Variable
+            # Dependent variable doesn't need OneHotEncoder
+            # ['No','Yes'] --> [0,1]
+            labelencoder_data = LabelEncoder()
+            data = labelencoder_data.fit_transform(data)
+    
+        return data
 
 
