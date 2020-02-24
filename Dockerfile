@@ -1,6 +1,9 @@
 FROM waleedka/modern-deep-learning
 
-ADD ./app/ / /app/
+COPY ./ /app
 
 WORKDIR /app
 
+RUN pip3 install -e .
+
+WORKDIR /app/app

@@ -1,9 +1,6 @@
 version: "3.2"
 services:
         djangoapp:
-                build: .
-                command: "/bin/bash"
-                volumes:
-                        - ./app/:/app/
-                restart: unless-stopped
-
+                build:
+                        context: ${PWD}
+                command: python3 main_cli.py

@@ -16,25 +16,25 @@ This is a workshop utilizing python and docker-compose to familiarize oneself in
         │
         ├── __init__.py
         │
-	├── database/
+        ├── database/
         │   │
-	│   ├── __init__.py
+        │   ├── __init__.py
         │   │
-	│   └── db.sqlite3
+        │   └── db.sqlite3
         │
-	├── main_cli.py
+        ├── main_cli.py
         │
-	├── server/
+        ├── server/
         │   │
-	│   ├── __init__.py
+        │   ├── __init__.py
         │   │
-	│   └── default.conf
+        │   └── default.conf
         │
-	└── utils/
+        └── utils/
             │
-	    ├── __init__.py
+            ├── __init__.py
             │
-	    └── utils.py
+            └── utils.py
 
 ## With Docker, we add segmentation for extra security by breaking the application into smaller pieces. 
 
@@ -122,7 +122,7 @@ The 'depends_on:' command tells docker-compose to build and run other containers
 
 'context:' - used with the 'build' command if the Dockerfile to be used is located any where other than the current directory. Specifies the location of the Dockerfile.
 
-#### Running your application
+#### Running your application (Note, we haven't made our Dockerfile yet, so this will fail. This is purely informational at this point in the workshop)
 
 If you have not already built your container, or you've made changes to the underlying source code, build with
 
@@ -176,9 +176,9 @@ Next, move into the new app directory.
 let us create the initial Dockerfile. I know I want to use python's machine learning stack, so I will choose a premade image from Docker, called 'waleedka/modern-deep-learning'.
 
     FROM waleedka/modern-deep-learning
-
-    ADD ./app/ / /app/
-
+    
+    COPY ./ /app
+    
     WORKDIR /app
 
 next, I need to create my docker-compose.yml file:
@@ -204,7 +204,7 @@ For now, because we don't have any programs written yet, the docker container is
     	docker build -t mlearn .
     # make run
     run:
-    	docker run -i -t --name mlearn -v /${cwd}/app/:/app/ -d mlearn /bin/bash
+    	docker run -i -t --name mlearn -v /${cwd}:/app/ -d mlearn /bin/bash
     # make exec
     exec:
     	docker exec -i -t mlearn /bin/bash
@@ -226,15 +226,15 @@ Let us build, run, and exec into our container
 
 Now, the first thing we need to do is create our '__init__.py'. This tells python that any modules in the current directory can be imported into any other modules, also in that directory.
 
-    touch __init__.py
+    touch app/app/__init__.py
 
 
 Let us also make our utils directory and move into it.
 
-    mkdir utils
-    cd utils
+    mkdir app/app/utils
+    cd app/app/utils/
 
-The specific algorithm that I want to build involves several steps. First, data must be imported, cleaned, and transformed. Within the utils directory, create a file called 'preprocessing.py' and insert the following into it:
+The specific algorithm that I want to build involves several steps. First, data must be imported, cleaned, and transformed. Within the app/app/utils/ directory, create a file called 'preprocessing.py' and insert the following into it:
 
     # Data Preprocessing
     
@@ -341,7 +341,7 @@ Syntax: standard syntax for functions is lower-case and underscore between words
 Inline Documentation: Besides using self-documenting code, i.e., naming things in a way so that it is obvious what each part of the code is doing, we also use inline comments utilizing the #-sign.
 Initializing Parameters: The parameters of the function are initialized with default values. This is useful for mitigating missing parameters resulting from user input, or saving time and space when the majority of instances use the default values.
 
-Now, let create another file in the utils directory called logistic_regression.py and insert the following into it.
+Now, let us create another file in the utils directory called logistic_regression.py and insert the following into it.
 
     from sklearn.linear_model import LogisticRegression as logreg
     
@@ -402,4 +402,216 @@ Now, let create another file in the utils directory called logistic_regression.p
 
 Note, this is not our main module, but it contains a list of functions that we will use, hence it belongs in the utils directory. If, perhaps, we had multiple regression modules, I would separate them into their own directory called 'regression', but, because there is just one module, putting it inside the utils directory is fine.
 
+Next, we need some data. Create a data/ directory in app/app/, download <a href="./data/Social_Media_Ads.csv" download>Social_Media_Ads.csv</a>, and put it in the app/app/data directory:
 
+    mkdir app/app/data
+    mv ~/Downloads/Social_Media_Ads.csv app/app/data/
+
+Now your app structure should look like this:
+
+     app/
+     │
+     ├── requirements.txt
+     │
+     ├── docker-compose.yml
+     │
+     ├── Dockerfile
+     │
+     ├── README.md
+     │
+     └──app/
+        │
+        ├── __init__.py
+        │
+        │
+        ├── data/
+        │   │
+        │   └── Social_Media_Ads.csv
+        │
+        │
+        └── utils/
+            │
+            ├── __init__.py
+            │
+            ├── logistic_regression.py
+            │
+            └── preprocessing.py
+
+Now it is time for our main client file. In app/app/, create main_cli.py and insert the following into it:
+
+    from app.utils import preprocessing as prep
+    from app.utils import logistic_regression as logreg
+    
+    class TestLogreg(object):
+    
+        # Initialize your class attributes
+        def __init__(self, data_path="", X=[], y=[], split=0.25, X_train=[], y_train=[],
+                     X_test=[], y_test=[], sc_X=[]):
+    
+            self.data = data_path
+            self.X = X
+            self.y = y
+            self.split = split
+            self.X_train = X_train
+            self.y_train = y_train
+            self.X_test = X_test
+            self.y_test = y_test
+            self.sc_X = sc_X
+    
+            self.prep_data()
+            self.regressor = self.train()
+            self.result = self.predict()
+    
+        def prep_data(self):
+            self.X, self.y = prep.import_data(self.data, 4, 4, 2)
+            self.X = self.X.astype(float)
+            self.X_train, self.X_test, self.y_train, self.y_test = prep.create_sets(self.X, self.y, size=self.split)
+            self.X_train, self.X_test, self.sc_X = prep.feature_scale(self.X_train, self.X_test)
+    
+        def train(self):
+            return logreg.train(self.X_train,self.y_train,random_state=0)
+    
+        def predict(self):
+            return self.regressor.predict(self.X_test)
+    
+        def accuracy(self):
+            correct = 0
+            for i in range(len(self.result)):
+                if self.result[i] == self.y_test[i]:
+                    correct += 1
+    
+            return correct*100/len(self.X_test)
+    
+    if __name__ == '__main__':
+    
+        test = Test_logreg(data_path='./data/Social_Network_Ads.csv')
+    
+        print('\nModel: Logistic Regression\nAccuracy: {}%\n'.format(test.accuracy()))
+
+Lets break down the Class structure:
+
+Note, we use camel-case for the title of the class and we define it as an object type:
+
+    class TestLogreg(object):
+
+The first function we define is the __init__() function, in which we set default values for each parameter:
+
+        def __init__(self, data_path="", X=[], y=[], split=0.25, X_train=[], y_train=[],
+                     X_test=[], y_test=[], sc_X=[]):
+
+            self.data = data_path
+            self.X = X
+            self.y = y
+            self.split = split
+            self.X_train = X_train
+            self.y_train = y_train
+            self.X_test = X_test
+            self.y_test = y_test
+            self.sc_X = sc_X
+
+            self.prep_data()
+            self.regressor = self.train()
+            self.result = self.predict()
+
+All other functions (or methods) follow the __init__() method.
+
+I write the main function after class, in which I initialize and instance of the class and call the accuracy method:
+
+    if __name__ == '__main__':
+
+        test = Test_logreg(data_path='./data/Social_Network_Ads.csv')
+
+        print('\nModel: Logistic Regression\nAccuracy: {}%\n'.format(test.accuracy()))
+
+Finally, to import our custom modules, we need to write an app/setup.py file consisting of the following:
+
+    from distutils.core import setup
+
+    setup(name='app',
+          version='1.0',
+          description='tutorial on the use of docker and python',
+          author='Alex Liddle',
+          author_email='aliddle@rsitex.com',
+          url='https://github.com/rockstardotb/docker-python-workshop',
+          packages=['app',
+                    'app.utils',
+                    'app.data',
+                    ],
+         )
+
+and we need to add the following to the bottom of our Dockerfile:
+
+    RUN pip3 install -e .
+    
+    WORKDIR /app/app
+
+Now your app structure should look like this:
+
+     app/
+     │
+     ├── requirements.txt
+     │
+     ├── docker-compose.yml
+     │
+     ├── Dockerfile
+     │
+     ├── README.md
+     │
+     ├── setup.py
+     │
+     └──app/
+        │
+        ├── __init__.py
+        │
+        │
+        ├── data/
+        │   │
+        │   └── Social_Media_Ads.csv
+        │
+        │
+        └── utils/
+            │
+            ├── __init__.py
+            │
+            ├── logistic_regression.py
+            │
+            └── preprocessing.py
+
+Now lets rebuild and run our docker container, and then exec in to run a test:
+
+    make stop
+    make remove
+    make build
+    make run
+    make exec
+
+    python main_cli.py
+
+If the output of 'python main_cli.py' is...
+
+    Model: Logistic Regression
+    Accuracy: 89.0%
+
+...then you have correctly built the application.
+
+Now we can automate the build, exec, and run process with docker-compose, first just change the content
+of docker-compose.yml to:
+
+    version: "3.2"
+    services:
+            djangoapp:
+                    build:
+                            context: ${PWD}
+                    command: python3 main_cli.py
+    
+
+Now run docker-compose build && docker-compose up
+
+again, if the output is...
+
+    Model: Logistic Regression
+    Accuracy: 89.0%
+
+...then you have correctly built the application.
+
+Congratulations, you have now used docker-compose with python. Remember, though this application seems simple and the use of docker-compose over docker seems unecessary, the real magic comes when building full-stack applications containing a database, app, and webserver. docker-compose is useful for service orchestration and microsegmentation.

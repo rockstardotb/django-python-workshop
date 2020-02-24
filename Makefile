@@ -5,7 +5,7 @@ build:
 	docker build -t mlearn .
 # make run
 run:
-	docker run -i -t --name mlearn -v /${cwd}/app/:/app/ -d mlearn /bin/bash
+	docker run -i -t --name mlearn -v /${cwd}/:/app/ -d mlearn /bin/bash
 # make exec
 exec:
 	docker exec -i -t mlearn /bin/bash
