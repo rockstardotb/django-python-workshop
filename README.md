@@ -102,7 +102,7 @@ The services represent the three components (or docker containers) that we broke
       depends_on:
         - postgres
 
-The 'build: .' tells docker-compose that the Dockerfile, which has all of the commands for dependency installations, is located.
+The 'build: .' tells docker-compose where the Dockerfile, which has all of the commands for dependency installations, is located.
 
 The 'command: "gunicorn app.wsgi:application --bind 0.0.0.0:8000"' tells docker-compose to run the 'gunicorn' command when the container is run.
 
@@ -141,8 +141,6 @@ To bring the application down, run
 The architecture will look similar to the following:
 
      app/
-     │
-     ├── requirements.txt
      │
      ├── docker-compose.yml
      │
@@ -224,15 +222,15 @@ Let us build, run, and exec into our container
     make run
     make exec
 
-Now, the first thing we need to do is create our '__init__.py'. This tells python that any modules in the current directory can be imported into any other modules, also in that directory.
+Now, the first thing we need to do is create our '__init__.py'. This tells python that any modules in the current directory can be imported into any other modules.
 
-    touch app/app/__init__.py
+    touch /app/app/__init__.py
 
 
 Let us also make our utils directory and move into it.
 
-    mkdir app/app/utils
-    cd app/app/utils/
+    mkdir /app/app/utils
+    cd /app/app/utils/
 
 The specific algorithm that I want to build involves several steps. First, data must be imported, cleaned, and transformed. Within the app/app/utils/ directory, create a file called 'preprocessing.py' and insert the following into it:
 
@@ -402,16 +400,13 @@ Now, let us create another file in the utils directory called logistic_regressio
 
 Note, this is not our main module, but it contains a list of functions that we will use, hence it belongs in the utils directory. If, perhaps, we had multiple regression modules, I would separate them into their own directory called 'regression', but, because there is just one module, putting it inside the utils directory is fine.
 
-Next, we need some data. Create a data/ directory in app/app/, download <a href="./data/Social_Media_Ads.csv" download>Social_Media_Ads.csv</a>, and put it in the app/app/data directory:
+Next, we need some data. Create a data/ directory in app/app/, download <a href="./data/Social_Media_Ads.csv" download>Social_Media_Ads.csv</a>, and put it in the /app/app/data directory:
 
-    mkdir app/app/data
-    mv ~/Downloads/Social_Media_Ads.csv app/app/data/
+    mkdir /app/app/data
 
 Now your app structure should look like this:
 
      app/
-     │
-     ├── requirements.txt
      │
      ├── docker-compose.yml
      │
@@ -437,7 +432,7 @@ Now your app structure should look like this:
             │
             └── preprocessing.py
 
-Now it is time for our main client file. In app/app/, create main_cli.py and insert the following into it:
+Now it is time for our main client file. In /app/app/, create main_cli.py and insert the following into it:
 
     from app.utils import preprocessing as prep
     from app.utils import logistic_regression as logreg
@@ -523,7 +518,7 @@ I write the main function after class, in which I initialize and instance of the
 
         print('\nModel: Logistic Regression\nAccuracy: {}%\n'.format(test.accuracy()))
 
-Finally, to import our custom modules, we need to write an app/setup.py file consisting of the following:
+Finally, to import our custom modules, we need to write an /app/setup.py file consisting of the following:
 
     from distutils.core import setup
 
@@ -539,7 +534,7 @@ Finally, to import our custom modules, we need to write an app/setup.py file con
                     ],
          )
 
-and we need to add the following to the bottom of our Dockerfile:
+and we need to add the following to the bottom of our /app/Dockerfile:
 
     RUN pip3 install -e .
     
@@ -548,8 +543,6 @@ and we need to add the following to the bottom of our Dockerfile:
 Now your app structure should look like this:
 
      app/
-     │
-     ├── requirements.txt
      │
      ├── docker-compose.yml
      │
@@ -577,8 +570,9 @@ Now your app structure should look like this:
             │
             └── preprocessing.py
 
-Now lets rebuild and run our docker container, and then exec in to run a test:
+Now lets exit, rebuild and run our docker container, and then exec in to run a test:
 
+    exit
     make stop
     make remove
     make build
@@ -614,4 +608,4 @@ again, if the output is...
 
 ...then you have correctly built the application.
 
-Congratulations, you have now used docker-compose with python. Remember, though this application seems simple and the use of docker-compose over docker seems unecessary, the real magic comes when building full-stack applications containing a database, app, and webserver. docker-compose is useful for service orchestration and microsegmentation.
+Congratulations, you have now used docker-compose with python. Remember, though this application seems simple and the use of docker-compose over docker seems unecessary, the you'll appreciate docker-compose when building full-stack applications containing a database, app, and webserver. docker-compose is useful for service orchestration and microsegmentation.
