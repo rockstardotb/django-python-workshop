@@ -136,7 +136,7 @@ To bring the application down, run
 
     docker-compose down
 
-## Now, lets build an application that uses python and docker-compose. For simplicity, I am only going to use a single container, but I will still use docker-compose.yml.
+## Now, let us build an application that uses python and docker-compose. For simplicity, I am only going to use a single container, but I will still use docker-compose.yml.
 
 The architecture will look similar to the following:
 
@@ -400,7 +400,7 @@ Now, let us create another file in the utils directory called logistic_regressio
 
 Note, this is not our main module, but it contains a list of functions that we will use, hence it belongs in the utils directory. If, perhaps, we had multiple regression modules, I would separate them into their own directory called 'regression', but, because there is just one module, putting it inside the utils directory is fine.
 
-Next, we need some data. Create a data/ directory in app/app/, download <a href="./data/Social_Media_Ads.csv" download>Social_Media_Ads.csv</a>, and put it in the /app/app/data directory:
+Next, we need some data. Create a data/ directory in /app/app/, download <a href="./data/Social_Media_Ads.csv" download>Social_Media_Ads.csv</a>, and put it in the /app/app/data directory:
 
     mkdir /app/app/data
 
@@ -483,7 +483,7 @@ Now it is time for our main client file. In /app/app/, create main_cli.py and in
     
         print('\nModel: Logistic Regression\nAccuracy: {}%\n'.format(test.accuracy()))
 
-Lets break down the Class structure:
+Let us break down the Class structure:
 
 Note, we use camel-case for the title of the class and we define it as an object type:
 
@@ -510,7 +510,7 @@ The first function we define is the __init__() function, in which we set default
 
 All other functions (or methods) follow the __init__() method.
 
-I write the main function after class, in which I initialize and instance of the class and call the accuracy method:
+I write the main function after the class, in which I initialize and instance of the class and call the accuracy method:
 
     if __name__ == '__main__':
 
@@ -570,7 +570,7 @@ Now your app structure should look like this:
             │
             └── preprocessing.py
 
-Now lets exit, rebuild and run our docker container, and then exec in to run a test:
+Now let us exit, rebuild and run our docker container, and then exec in to run a test:
 
     exit
     make stop
