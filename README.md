@@ -1,4 +1,4 @@
-# django-python-workshop
+# docker-python-workshop
 This is a workshop utilizing python and docker-compose to familiarize oneself in architecture and containerization.
 
 ## The standard layout of an application (WITHOUT Docker) is as follows:
