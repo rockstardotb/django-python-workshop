@@ -608,4 +608,4 @@ again, if the output is...
 
 ...then you have correctly built the application.
 
-Congratulations, you have now used docker-compose with python. Remember, though this application seems simple and the use of docker-compose over docker seems unecessary, the you'll appreciate docker-compose when building full-stack applications containing a database, app, and webserver. docker-compose is useful for service orchestration and microsegmentation.
+Congratulations, you have now used docker-compose with python. Remember, though this application seems simple and the use of docker-compose over docker seems unecessary, you'll appreciate docker-compose when building full-stack applications containing a database, app, and webserver. docker-compose is useful for service orchestration and microsegmentation.
