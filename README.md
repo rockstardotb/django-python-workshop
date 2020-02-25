@@ -526,7 +526,7 @@ Finally, to import our custom modules, we need to write an /app/setup.py file co
           version='1.0',
           description='tutorial on the use of docker and python',
           author='Alex Liddle',
-          author_email='aliddle@rsitex.com',
+          author_email='alex37184@yahoo.com',
           url='https://github.com/rockstardotb/docker-python-workshop',
           packages=['app',
                     'app.utils',
